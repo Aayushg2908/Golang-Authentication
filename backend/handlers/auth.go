@@ -4,8 +4,6 @@ import (
 	"context"
 	"golang-authentication/helpers"
 	"golang-authentication/prisma/db"
-	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -91,13 +89,6 @@ func Login(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Error generating token"})
 		return
 	}
-
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  time.Now().Add(time.Hour * 24),
-		HttpOnly: true,
-	})
 
 	c.JSON(200, gin.H{
 		"success": "Logged in successfully",
