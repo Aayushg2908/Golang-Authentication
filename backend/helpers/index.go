@@ -3,6 +3,7 @@ package helpers
 import (
 	"golang-authentication/prisma/db"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -102,16 +103,18 @@ func ParseToken(token string) (string, error) {
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := c.Cookie("token")
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Unauthorized"})
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(400, gin.H{"error": "No authorization header provided"})
 			c.Abort()
 			return
 		}
 
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
 		id, err := ParseToken(token)
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Unauthorized"})
+			c.JSON(400, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}

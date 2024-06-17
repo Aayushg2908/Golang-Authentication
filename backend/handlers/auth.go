@@ -4,6 +4,8 @@ import (
 	"context"
 	"golang-authentication/helpers"
 	"golang-authentication/prisma/db"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -34,13 +36,9 @@ func Register(c *gin.Context) {
 
 	ctx := context.Background()
 
-	existingUser, err := helpers.Client.User.FindUnique(
+	existingUser, _ := helpers.Client.User.FindUnique(
 		db.User.Email.Equals(cred.Email),
 	).Exec(ctx)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
 	if existingUser != nil {
 		c.JSON(400, gin.H{"error": "Email already taken"})
 		return
@@ -94,19 +92,16 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", tokenString, 3600, "/", "localhost", false, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HttpOnly: true,
+	})
 
 	c.JSON(200, gin.H{
 		"success": "Logged in successfully",
 		"token":   tokenString,
-	})
-}
-
-func Logout(c *gin.Context) {
-	c.SetCookie("token", "", -1, "/", "localhost", false, true)
-
-	c.JSON(200, gin.H{
-		"success": "Logged out successfully",
 	})
 }
 

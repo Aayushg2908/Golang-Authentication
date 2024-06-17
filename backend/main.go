@@ -14,7 +14,6 @@ func main() {
 	r.POST("/api/register", handlers.Register)
 	r.POST("/api/login", handlers.Login)
 	r.GET("/api/me", helpers.AuthMiddleware(), handlers.Me)
-	r.POST("/api/logout", helpers.AuthMiddleware(), handlers.Logout)
 
 	defer helpers.CloseClient(helpers.Client)
 
